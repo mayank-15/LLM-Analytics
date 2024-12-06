@@ -1,0 +1,9 @@
+.env
+cache/
+exports/
+.idea/
+__pycache__/
+pandasai.log
+langchain.csv
+*.png
+.DS_Store
