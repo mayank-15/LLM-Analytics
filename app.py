@@ -19,21 +19,31 @@ client = OpenAI(api_key=API_KEY)
 initialize_state()
 
 #uploaded_file = st.file_uploader(label="Upload CSV")
-uploaded_file_1 = st.file_uploader("Upload CSV 1", key="csv1")
-uploaded_file_2 = st.file_uploader("Upload CSV 2", key="csv2")
-if uploaded_file_1 and uploaded_file_2:
-    df_1 = pd.read_csv(uploaded_file_1)
-    df_2 = pd.read_csv(uploaded_file_2)
-    merged_df = pd.merge(df_1, df_2, left_on='order_id', right_on='gateway_order_id', how='inner')
-    merged_csv_path = "merged.csv"
-    merged_df.to_csv(merged_csv_path, index=False)
+# uploaded_file_1 = st.file_uploader("Upload CSV 1", key="csv1")
+# uploaded_file_2 = st.file_uploader("Upload CSV 2", key="csv2")
+# if uploaded_file_1 and uploaded_file_2:
+#     df_1 = pd.read_csv(uploaded_file_1)
+#     df_2 = pd.read_csv(uploaded_file_2)
+#     merged_df = pd.merge(df_1, df_2, left_on='order_id', right_on='gateway_order_id', how='inner')
+#     merged_csv_path = "merged.csv"
+#     merged_df.to_csv(merged_csv_path, index=False)
 
-    modified_csv_path = process_entities(merged_csv_path)
+#     modified_csv_path = process_entities(csv_path)
+#     template = generate_template_yaml(modified_csv_path)
+#     prompt_template = edit_generated_prompt(template)
+
+uploaded_file = st.file_uploader("Upload CSV", key="csv")
+if uploaded_file:
+    df = pd.read_csv(uploaded_file)
+    csv_path = "uploaded.csv"
+    df.to_csv(csv_path, index=False)
+
+    modified_csv_path = process_entities(csv_path)
     template = generate_template_yaml(modified_csv_path)
     prompt_template = edit_generated_prompt(template)
 
 if "openai" not in st.session_state:
-    st.session_state["openai"] = "gpt-3.5-turbo"
+    st.session_state["openai"] = "gpt-4o"
 
 # Initialize Chat history
 if "messages" not in st.session_state:
@@ -85,7 +95,7 @@ if user_prompt := st.chat_input("Enter Prompt"):
 
     final_prompt = prompt_template.format(user_input=user_prompt)
     completion = client.chat.completions.create(
-        model='gpt-3.5-turbo',
+        model='gpt-4o',
         messages=[
             {
                 "role": "user", "content": final_prompt

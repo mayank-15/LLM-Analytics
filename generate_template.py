@@ -1,27 +1,30 @@
 import pandas as pd
 import spacy
 
+# def process_entities(csv_file_path):
+#     df = pd.read_csv(csv_file_path)
+#     # print(df)
+
+#     # Use spaCy NER model to extract entities from columns
+#     nlp_ner = spacy.load("model-best")
+#     entities_to_remove = []
+#     for column in df.columns:
+#         doc = nlp_ner(column)
+#         for ent in doc.ents:
+#             entities_to_remove.append(ent.text)
+#     # print(f"Entities to remove: {entities_to_remove}")
+    
+#     # Remove columns with entities from the dataframe
+#     df = df.drop(columns=entities_to_remove, errors='ignore')
+    
+#     # Save the modified dataframe back to a CSV
+#     entities_csv_file_path = "modified.csv"
+#     df.to_csv(entities_csv_file_path, index=False)
+
+#     return entities_csv_file_path
+
 def process_entities(csv_file_path):
-    df = pd.read_csv(csv_file_path)
-    # print(df)
-
-    # Use spaCy NER model to extract entities from columns
-    nlp_ner = spacy.load("model-best")
-    entities_to_remove = []
-    for column in df.columns:
-        doc = nlp_ner(column)
-        for ent in doc.ents:
-            entities_to_remove.append(ent.text)
-    # print(f"Entities to remove: {entities_to_remove}")
-    
-    # Remove columns with entities from the dataframe
-    df = df.drop(columns=entities_to_remove, errors='ignore')
-    
-    # Save the modified dataframe back to a CSV
-    entities_csv_file_path = "modified.csv"
-    df.to_csv(entities_csv_file_path, index=False)
-
-    return entities_csv_file_path
+    return csv_file_path
 
 def generate_template_yaml(modified_csv_file_path):
     df = pd.read_csv(modified_csv_file_path)
