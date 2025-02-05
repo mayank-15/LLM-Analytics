@@ -43,7 +43,7 @@ if uploaded_file:
     prompt_template = edit_generated_prompt(template)
 
 if "openai" not in st.session_state:
-    st.session_state["openai"] = "gpt-4o"
+    st.session_state["openai"] = "o1-mini"
 
 # Initialize Chat history
 if "messages" not in st.session_state:
@@ -66,7 +66,7 @@ for prompt_name, prompt_text in predefined_prompts.items():
 
     if col.button(prompt_name):
         # Provide immediate feedback
-        with st.spinner(f"Processing '{prompt_name}'..."):
+        with (st.spinner(f"Processing '{prompt_name}'...")):
             st.session_state.last_button_clicked = prompt_name
             st.session_state.messages.append({"role": "user", "content": prompt_text})
 
@@ -95,7 +95,7 @@ if user_prompt := st.chat_input("Enter Prompt"):
 
     final_prompt = prompt_template.format(user_input=user_prompt)
     completion = client.chat.completions.create(
-        model='gpt-4o',
+        model="o1-mini",
         messages=[
             {
                 "role": "user", "content": final_prompt

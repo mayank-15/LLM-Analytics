@@ -7,3 +7,6 @@ pandasai.log
 langchain.csv
 *.png
 .DS_Store
+./venv-llm
+.README.md
+/venv-llm
