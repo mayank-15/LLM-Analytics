@@ -4,6 +4,8 @@ import tempfile
 import gc
 import base64
 import time
+import shutil
+import datetime
 import pandas as pd
 from PIL import Image
 from dotenv import load_dotenv
@@ -17,7 +19,7 @@ from predefined_prompts import prompts as predefined_prompts
 # ----- PDF-Related Imports -----
 from crewai import Agent, Crew, Process, Task
 from crewai_tools import SerperDevTool
-from agentic_rag.tools.custom_tool import DocumentSearchTool
+from src.agentic_rag.tools.custom_tool import DocumentSearchTool
 
 # Load environment variables (for CSV processing)
 load_dotenv(".env")
@@ -34,6 +36,30 @@ mode = st.sidebar.radio("Choose a mode:", options=["CSV", "PDF"])
 if mode == "CSV":
     st.markdown("# Abhiyan GPT")
     
+    # Helper function to save PNG images into a "visualisations" folder.
+    def save_image_to_visualisations(image_data):
+        folder = "visualisations"
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        dest_filename = os.path.join(folder, f"plot_{timestamp}.png")
+        
+        # If image_data is a file path and exists, copy it.
+        if isinstance(image_data, str) and os.path.exists(image_data):
+            shutil.copy(image_data, dest_filename)
+        # If it is a PIL Image, save it directly.
+        elif isinstance(image_data, Image.Image):
+            image_data.save(dest_filename)
+        else:
+            # If image_data is not directly a file path or PIL image,
+            # try opening it via PIL (this may work if it's a file-like object).
+            try:
+                im = Image.open(image_data)
+                im.save(dest_filename)
+            except Exception as e:
+                st.error(f"Error saving image: {e}")
+        return dest_filename
+
     # Initialize any necessary state for CSV mode
     initialize_state()
     if "openai" not in st.session_state:
@@ -85,7 +111,9 @@ if mode == "CSV":
                     responses = extract_code(completion, modified_csv_path)
                     for response in responses:
                         if response["type"] == "plot":
-                            st.image(response["value"])
+                            # Save the image into "visualisations" and display it.
+                            saved_filename = save_image_to_visualisations(response["value"])
+                            st.image(saved_filename)
                         else:
                             st.write(response["value"])
                         st.session_state.messages.append({"role": "assistant", "content": response["value"]})
@@ -108,7 +136,8 @@ if mode == "CSV":
             responses = extract_code(completion, modified_csv_path)
             for response in responses:
                 if response["type"] == "plot":
-                    st.image(response["value"])
+                    saved_filename = save_image_to_visualisations(response["value"])
+                    st.image(saved_filename)
                 else:
                     st.write(response["value"])
                 st.session_state.messages.append({"role": "assistant", "content": response["value"]})
@@ -133,8 +162,8 @@ elif mode == "PDF":
         st.session_state.messages = []
         gc.collect()
 
-    def display_pdf(file_bytes: bytes, file_name: str):
-        """Displays the uploaded PDF in an iframe."""
+    def display_pdf(file_bytes: bytes, file_name: str, container):
+        """Displays the uploaded PDF in an iframe within the given container."""
         base64_pdf = base64.b64encode(file_bytes).decode("utf-8")
         pdf_display = f"""
         <iframe 
@@ -144,8 +173,8 @@ elif mode == "PDF":
             type="application/pdf"
         ></iframe>
         """
-        st.markdown(f"### Preview of {file_name}")
-        st.markdown(pdf_display, unsafe_allow_html=True)
+        container.markdown(f"### Preview of {file_name}")
+        container.markdown(pdf_display, unsafe_allow_html=True)
 
     def create_agents_and_tasks(pdf_tool):
         """Creates a Crew with the given PDF tool and a web search tool."""
@@ -214,7 +243,7 @@ elif mode == "PDF":
         )
         return crew
 
-    # --- Sidebar: PDF Upload and Clear Chat ---
+    # --- Sidebar: PDF Upload, Preview, and Clear Chat ---
     st.sidebar.header("Add Your PDF Document")
     uploaded_file = st.sidebar.file_uploader("Choose a PDF file", type=["pdf"], key="pdf")
     
@@ -226,8 +255,9 @@ elif mode == "PDF":
                     f.write(uploaded_file.getvalue())
                 with st.spinner("Indexing PDF... Please wait..."):
                     st.session_state.pdf_tool = DocumentSearchTool(file_path=temp_file_path)
-            st.success("PDF indexed! Ready to chat.")
-        display_pdf(uploaded_file.getvalue(), uploaded_file.name)
+            st.sidebar.success("PDF indexed! Ready to chat.")
+        # Display the PDF preview in the sidebar
+        display_pdf(uploaded_file.getvalue(), uploaded_file.name, container=st.sidebar)
     
     st.sidebar.button("Clear Chat", on_click=reset_chat)
 
