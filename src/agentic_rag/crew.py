@@ -3,7 +3,7 @@ from crewai.project import CrewBase, agent, crew, task
 from crewai_tools import SerperDevTool
 from crewai_tools import PDFSearchTool
 # from tools.custom_tool import DocumentSearchTool
-from agentic_rag.tools.customs_tool import DocumentSearchTool
+from agentic_rag.tools.custom_tool import DocumentSearchTool
 
 # Initialize the tool with a specific PDF path for exclusive search within that document
 pdf_tool = DocumentSearchTool(pdf='/Users/akshaypachaar/Eigen/ai-engineering/agentic_rag/knowledge/dspy.pdf')
